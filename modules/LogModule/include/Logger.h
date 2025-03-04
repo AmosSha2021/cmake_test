@@ -14,28 +14,28 @@
     #define LOG_API __attribute__((visibility("default")))
 #endif
 
-class LOG_API Logger {  // 导出类
+class LOG_API Logger {
 public:
     enum class Level { Debug, Info, Warning, Error };
 
-    // 支持上下文标识的构造函数
-    explicit Logger(const std::string& logFile, 
-                  const std::string& contextID,
-                  Level minLevel = Level::Info);
-                  
-    // 保持原有构造函数兼容性
-    // explicit Logger(const std::string& logFile = "app.log", 
-    //               Level minLevel = Level::Info);
-    ~Logger();
+    LOG_API explicit Logger(const std::string& logFile, 
+                          const std::string& contextID,
+                          Level minLevel = Level::Info);
+                          
+    LOG_API ~Logger();
 
-    void log(Level level, const std::string& message);
-    void debug(const std::string& message);
-    void info(const std::string& message);
-    void warning(const std::string& message);
-    void error(const std::string& message);
+    // 禁用拷贝
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
 
-    // 上下文标识设置接口
-    void setContextID(const std::string& id) { contextID = id; }
+    LOG_API void log(Level level, const std::string& message);
+    LOG_API void debug(const std::string& message);
+    LOG_API void info(const std::string& message);
+    LOG_API void warning(const std::string& message);
+    LOG_API void error(const std::string& message);
+
+    LOG_API void setContextID(const std::string& id);
+    LOG_API bool isValid() const;
 
 private:
     std::string contextID;
@@ -43,6 +43,6 @@ private:
     std::ofstream logStream;
     std::mutex logMutex;
     
-    static const char* levelToString(Level level);
-    std::string getCurrentTimestamp();
+    LOG_API static const char* levelToString(Level level);
+    LOG_API std::string getCurrentTimestamp();
 };

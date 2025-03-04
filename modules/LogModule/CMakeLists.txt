@@ -1,16 +1,22 @@
 # 使用相对路径定位源文件
-add_library(LogModule SHARED  # 修改为SHARED
+add_library(LogModule SHARED
     src/Logger.cpp
 )
 
-# 保持头文件包含
 target_include_directories(LogModule PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# 增加符号可见性控制（可选）
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(LogModule PRIVATE -fvisibility=hidden)
+if(MINGW)
+    # MinGW需要显式链接标准库
+    target_link_libraries(LogModule PRIVATE 
+        pthread
+        stdc++fs  # 支持filesystem库
+    )
+else()
+    target_link_libraries(LogModule PRIVATE 
+        pthread
+    )
 endif()
 
 # 设置动态库版本
@@ -22,12 +28,26 @@ set_target_properties(LogModule PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
-# 链接线程库
-target_link_libraries(LogModule PRIVATE 
-    pthread
-)
-
 # 添加模块导出定义
 target_compile_definitions(LogModule PRIVATE
     LOG_MODULE_EXPORTS
 )
+
+# 在模块级CMakeLists中配置头文件结构
+target_include_directories(LogModule PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+if(MINGW)
+    # 添加静态链接选项
+    target_link_options(LogModule PRIVATE
+        -static-libstdc++
+        -static-libgcc
+    )
+    
+    # 强制使用C++17 ABI
+    target_compile_definitions(LogModule PRIVATE
+        -D_GLIBCXX_USE_CXX11_ABI=1
+    )
+endif()
