@@ -1,17 +1,10 @@
 #include <iostream>
+#include <bits/this_thread_sleep.h>
 #include "Logger.h"
-
-
 using namespace std;
 
+// 删除所有TestManager相关代码，添加新的Logger测试用例
 int main() {
-    // 创建日志记录器，指定日志文件路径
-    Logger logger("runtime.log", Logger::Level::Debug);
-    
-    logger.debug("Debug message with timestamp");
-    logger.info("Application initialized");
-    logger.warning("Low disk space");
-    logger.error("Critical system failure");
-    std::cout << "Hello, world!" << std::endl;
+    cout << "This is a cmake test app" << endl;
     return 0;
 }
