@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     LogModule  # 修正为子模块中定义的目标名称
     pthread
+    CoreModule
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE CoreModule)
 

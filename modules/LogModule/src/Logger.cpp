@@ -61,12 +61,25 @@ const char* Logger::levelToString(Level level) {
         default: return "UNKNOWN";
     }
 }
-
 string Logger::getCurrentTimestamp() {
     auto now = chrono::system_clock::now();
     auto in_time_t = chrono::system_clock::to_time_t(now);
     
+    // 线程安全的时间转换
+    tm tm_struct;
+    #ifdef _WIN32
+        localtime_s(&tm_struct, &in_time_t);  // Windows安全版本
+    #else
+        localtime_r(&in_time_t, &tm_struct);  // POSIX安全版本
+    #endif
+
+    // 获取毫秒部分
+    auto ms = chrono::duration_cast<chrono::milliseconds>(
+        now.time_since_epoch()
+    ) % 1000;
+
     stringstream ss;
-    ss << put_time(localtime(&in_time_t), "%Y-%m-%d %X");
+    ss << put_time(&tm_struct, "%Y-%m-%d %H:%M:%S")
+       << "." << setfill('0') << setw(3) << ms.count();
     return ss.str();
 }

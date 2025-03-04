@@ -2,6 +2,23 @@
 #include <vector>
 #include "Logger.h"
 #include "Calculate.h"
+#include <thread>
+#include <atomic>
+
+// 新增测试函数
+void dut_test(int dut_id) {
+    try {
+        std::string log_file = "logs/dut" + std::to_string(dut_id) + "_test.log";
+        Logger logger(log_file, "DUT_" + std::to_string(dut_id), Logger::Level::Debug);
+        
+        for(int i=0; i<100; ++i){
+            logger.info("DUT" + std::to_string(dut_id) + "loop test #" + std::to_string(i));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    } catch(const std::exception& e) {
+        std::cerr << "DUT" << dut_id << "error: " << e.what() << std::endl;
+    }
+}
 
 int main() {
     // 新增核心模块测试
@@ -11,18 +28,24 @@ int main() {
     std::cout << "square(5) = " << Calculate::square(5) << std::endl;
     
     try {
-        // 初始化带上下文标识的日志器
-        Logger mLogger("test_log.log", "MAIN_CTX", Logger::Level::Debug);
-
-        // 测试用例1：基础日志功能
-        mLogger.debug("Debug message should be visible");
-        mLogger.info("Application started");
-        mLogger.warning("Low disk space warning");
-        mLogger.error("Failed to open file");
-
-        std::cout << "所有日志测试已完成" << std::endl;
+        // 新增多线程测试
+        constexpr int DUT_NUM = 3;
+        std::vector<std::thread> workers;
+        
+        std::cout << "start to thread test..." << std::endl;
+        for(int i=0; i<DUT_NUM; ++i){
+            workers.emplace_back(dut_test, i+1); // DUT编号从1开始
+        }
+        
+        // 等待所有线程完成
+        for(auto& t : workers){
+            t.join();
+        }
+        std::cout << "all dut test done" << std::endl;
+        
     } catch (const std::exception& e) {
-        std::cerr << "run error: " << e.what() << std::endl;
+        std::cerr << "error on main thread: " << e.what() << std::endl;
     }
+
     return 0;
 }
